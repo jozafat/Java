@@ -1,38 +1,44 @@
-package archiwizacjDanych;
+package rozpakowywanieZip;
 
-import java.io.*;
-import java.util.zip.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class Main {
-
 	public static final int BUFFOR = 1024;
 
 	public static void main(String[] args) {
-
-		String tab[] = new String[] { "kolejny1.txt", "baza.txt" };
-		byte tmpData[] = new byte[BUFFOR];
+		File katalog = new File(System.getProperty("user.dir") + File.separator + "zapisanyzip");
+		ZipEntry wpis = null;
+		byte[] tmpData = new byte[BUFFOR];
 		try {
-			ZipOutputStream zOutS = new ZipOutputStream(
-					new BufferedOutputStream(new FileOutputStream("zapisanyzip.zip")));
+			if (!katalog.exists())
+				katalog.mkdir();
 
-			for (int i = 0; i < tab.length; i++) {
-				BufferedInputStream inS = new BufferedInputStream(new FileInputStream(tab[i]), BUFFOR);
+			ZipInputStream zInS = new ZipInputStream(
+					new BufferedInputStream(new FileInputStream("zapisanyzip.zip"), BUFFOR));
 
-				zOutS.putNextEntry(new ZipEntry(tab[i]));
+			while ((wpis = zInS.getNextEntry()) != null) {
+				BufferedOutputStream fOutS = new BufferedOutputStream(
+						new FileOutputStream(katalog + File.separator + wpis.getName()), BUFFOR);
 
 				int counter;
-				while ((counter = inS.read(tmpData, 0, BUFFOR)) != -1) {
-					zOutS.write(tmpData, 0, counter);
-				}
 
-				zOutS.closeEntry();
-				inS.close();
+				while ((counter = zInS.read(tmpData, 0, BUFFOR)) != -1)
+					fOutS.write(tmpData, 0, counter);
+
+				fOutS.close();
+				zInS.closeEntry();
 			}
-			zOutS.close();
+			zInS.close();
 		} catch (IOException ex) {
 			System.out.println(ex.getMessage());
 		}
-
 	}
 
 }
